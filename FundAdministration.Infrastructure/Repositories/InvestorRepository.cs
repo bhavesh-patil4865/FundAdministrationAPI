@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FundAdministration.Infrastructure.Repositories
@@ -24,6 +23,11 @@ namespace FundAdministration.Infrastructure.Repositories
                 .Where(x => x.InvestorId == investorId)
                 .ToListAsync();
         }
-    
+
+        public async Task<int> GetInvestorCountByFundAsync(Guid fundId)
+        {
+            return await _context.Investors
+                .CountAsync(i => i.FundId == fundId);
+        }
     }
 }

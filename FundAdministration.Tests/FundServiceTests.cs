@@ -14,6 +14,8 @@ namespace FundAdministration.Tests.Services
     {
         private Mock<IFundRepository> _mockRepository;
         private Mock<IMapper> _mockMapper;
+        private Mock<ITransactionRepository> _mockTransactionRepository;
+        private Mock<IInvestorRepository> _mockInvestorRepository;
         private FundService _service;
 
         [TestInitialize]
@@ -21,10 +23,23 @@ namespace FundAdministration.Tests.Services
         {
             _mockRepository = new Mock<IFundRepository>();
             _mockMapper = new Mock<IMapper>();
+            _mockTransactionRepository = new Mock<ITransactionRepository>();
+            _mockInvestorRepository = new Mock<IInvestorRepository>();
+
+            // Provide safe defaults so tests that don't explicitly setup these calls won't fail.
+            _mockTransactionRepository
+                .Setup(x => x.GetTransactionsByFundIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(new List<Transaction>());
+
+            _mockInvestorRepository
+                .Setup(x => x.GetInvestorCountByFundAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(0);
 
             _service = new FundService(
                 _mockRepository.Object,
-                _mockMapper.Object);
+                _mockMapper.Object,
+                _mockTransactionRepository.Object,
+                _mockInvestorRepository.Object);
         }
 
         [TestMethod]

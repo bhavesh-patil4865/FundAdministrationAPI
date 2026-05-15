@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FundAdministration.Application.DTOs;
-
 using FundAdministration.Domain.Entities;
 using FundAdministration.Domain.Interfaces;
 using AutoMapper;
@@ -18,12 +17,20 @@ namespace FundAdministration.Application.Services
 
         private readonly IMapper _mapper;
 
+        private readonly ITransactionRepository _transactionRepository;
+
+        private readonly IInvestorRepository _investorRepository;
+
         public FundService(
             IFundRepository repository,
-            IMapper mapper)
+            IMapper mapper,
+            ITransactionRepository transactionRepository,
+            IInvestorRepository investorRepository)
         {
             _repository = repository;
             _mapper = mapper;
+            _transactionRepository = transactionRepository;
+            _investorRepository = investorRepository;
         }
 
         public async Task<IEnumerable<FundDto>> GetAllAsync()
@@ -87,12 +94,28 @@ namespace FundAdministration.Application.Services
             if (fund == null)
                 throw new Exception("Fund not found");
 
+            var transactions =
+                await _transactionRepository.GetTransactionsByFundIdAsync(fundId);
+
+            var totalSubscriptions = transactions
+                .Where(t => t.Type == TransactionType.Subscription)
+                .Sum(t => t.Amount);
+
+            var totalRedemptions = transactions
+                .Where(t => t.Type == TransactionType.Redemption)
+                .Sum(t => t.Amount);
+
+            var investorCount =
+                await _investorRepository
+                    .GetInvestorCountByFundAsync(fundId);
+
             return new FundSummaryDto
             {
-                FundId = fundId
+                FundId = fundId,
+                TotalSubscriptions = totalSubscriptions,
+                TotalRedemptions = totalRedemptions,
+                NumberOfInvestors = investorCount
             };
         }
-
-
     }
 }
