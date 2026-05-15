@@ -238,5 +238,43 @@ namespace FundAdministration.Tests.Repositories
             // Assert
             Assert.AreEqual(2, result.Count());
         }
+
+        [TestMethod]
+        public async Task GetByIdAsync_Should_Return_Null_When_Not_Exists()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            using var context = new AppDbContext(options);
+
+            var repository = new InvestorRepository(context);
+
+            // Act
+            var result = await repository.GetByIdAsync(Guid.NewGuid());
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public async Task GetAllAsync_Should_Return_Empty_When_No_Investors()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+
+            using var context = new AppDbContext(options);
+
+            var repository = new InvestorRepository(context);
+
+            // Act
+            var result = await repository.GetAllAsync();
+
+            // Assert
+            Assert.AreEqual(0, result.Count());
+        }
     }
 }
